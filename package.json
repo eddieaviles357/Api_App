@@ -1,0 +1,19 @@
+{
+  "name": "dev_camper",
+  "version": "1.0.0",
+  "description": "Boot_Camp",
+  "main": "server.js",
+  "scripts": {
+    "start": "NODE_ENV=production n server.js",
+    "dev": "nodemon server"
+  },
+  "author": "EduardoAviles",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  }
+}
