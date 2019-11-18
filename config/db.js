@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 //     }
 // }
 
+// Use only for local production storage, when no bandwidth available
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect('mongodb://localhost:27017/dev_camper', {
