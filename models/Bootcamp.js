@@ -97,6 +97,9 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
 // Run middleware this middleware before its save.
@@ -110,8 +113,10 @@ BootcampSchema.pre('save', function(next) {
 })
 
 // Geocode & create location field
+// Note(Need bandwidth to access API)
 BootcampSchema.pre('save', async function(next) {
     const loc = await geocoder.geocode(this.address);
+    
     this.location = {
         type: 'Point',
         coordinates: [loc[0].longitude, loc[0].latitude],
@@ -122,9 +127,25 @@ BootcampSchema.pre('save', async function(next) {
         zipcode: loc[0].zipcode,
         country: loc[0].countryCode
     }
+
     // Do not save address in DB
     this.address = undefined;
     next();
+});
+
+// Cascade delete courses when a bootcamp is deleted
+BootcampSchema.pre('remove', async function(next) {
+    console.log(`Courses being removed from bootcamp ${this._id}`)
+    await this.model('Course').deleteMany({ bootcamp: this._id });
+    next();
 })
+
+// Reverse populate with virtuals
+BootcampSchema.virtual('courses'), {
+    ref: 'Course',
+    localField: '_id',
+    foreignField: 'bootcamp',
+    justOne: false
+}
 
 module.exports = mongoose.model('Bootcamp', BootcampSchema);

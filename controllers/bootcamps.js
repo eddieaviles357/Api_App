@@ -7,7 +7,69 @@ const Bootcamp = require('../models/Bootcamp');
 // @route       GET /api/v1/bootcamps
 // @access      Public
 exports.getBootcamps = asyncHandler( async (req, res, next) => {
-    const bootcamps = await Bootcamp.find();
+    let query;
+
+    // Copy req.query
+    const reqQuery = { ...req.query };
+
+    // Fields to exclude
+    const removeFields = ['select', 'sort', 'page', 'limit'];
+    
+    // Loop over removeFields and delete them from reqQuery
+    // removeFields.map(param => delete reqQuery[param]);
+    removeFields.forEach(param => delete reqQuery[param]);
+
+    // Create query string
+    let queryStr = JSON.stringify(reqQuery);
+
+    // Create operators ($gt, $gte, etc..{>, >=, etc..})
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+
+    // Finding resource
+    query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
+    
+    // Select field
+    if(req.query.select) {
+        const fields = req.query.select.split(',').join(' ');
+        query = query.select(fields);
+    }
+
+    // Sort
+    if(req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy)
+    } else {
+        query = query.sort('-createdAt');
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25; // 25 max on a page
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Bootcamp.countDocuments();
+
+    query = query.skip(startIndex).limit(limit);
+
+    // Executing query
+    const bootcamps = await query;
+
+    // Pagination results
+    const pagination = {};
+
+    if(endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            limit
+        }
+    }
+
+    if(endIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit
+        }
+    }
 
     res
     .status(200)
@@ -72,8 +134,12 @@ exports.deleteBootcamp = asyncHandler( async (req, res, next) => {
 // @desc        Get bootcamp within a radius
 // @route       Get /api/v1/bootcamps/:zipcode/:distance
 // @access      Private
-exports.getBootcampInRadius = asyncHandler( async (req, res, next) => {
+exports.getBootcampsInRadius = asyncHandler( async (req, res, next) => {
+    const { zipcode, distance } = req.params;
+
+    // Get lat/lng from geocoder
     const loc = await geocoder.geocode(zipcode);
+    
     const lat = loc[0].latitude;
     const lng = loc[0].longitude;
 
