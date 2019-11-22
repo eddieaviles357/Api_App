@@ -141,11 +141,11 @@ BootcampSchema.pre('remove', async function(next) {
 })
 
 // Reverse populate with virtuals
-BootcampSchema.virtual('courses'), {
+BootcampSchema.virtual('courses', {
     ref: 'Course',
     localField: '_id',
     foreignField: 'bootcamp',
     justOne: false
-}
+});
 
 module.exports = mongoose.model('Bootcamp', BootcampSchema);
