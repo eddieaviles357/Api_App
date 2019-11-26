@@ -10,8 +10,10 @@ dotenv.config({ path: './config/config.env' });
 const Bootcamp = require('./models/Bootcamp');
 const Course = require('./models/Courses');
 
-// Connect to DB
+// Connect to DB // for outside use
 mongoose.connect('mongodb://localhost:27017/dev_camper', {
+    // for local use only
+// mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
