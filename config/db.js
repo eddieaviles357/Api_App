@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 //             useFindAndModify: false,
 //             useUnifiedTopology: true
 //         });
-//         console.log(`MongoDB connected: ${conn.connection.host}`.cyan.underline.bold);
+//         console.log(`MongoDB connected: ${conn.connection.host}`);
 //     } catch (err) {
 //         console.log(err);
 //     }
