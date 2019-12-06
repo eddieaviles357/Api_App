@@ -5,9 +5,15 @@ const dotenv = require('dotenv');
 const errorHandler = require('./middleware/error');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const cors = require('cors');
 const mongoSanitize = require('express-mongo-sanitize');
 const fileupload = require('express-fileupload');
 const morgan = require('morgan');
+
 
 // Load environment variables
 dotenv.config({ path: './config/config.env' });
@@ -40,6 +46,30 @@ app.use(fileupload());
 
 // Sanitize Data
 app.use(mongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
+// Prevent XSS attacks
+app.use(xss());
+
+//-------------------------------------------------
+// Rate limiting
+const limiter = rateLimit({
+    // 10 mins, statuscode=429
+    windowMs: 5 * 60 * 1000,
+    // 100 api request per 10 minutes
+    max: 3,
+    message: 'Too many request, please wait 5 minutes'
+});
+app.use(limiter);
+//-------------------------------------------------
+
+// Prevent http params pollution
+app.use(hpp());
+
+// Enable CORS ('cross origin resource sharing), so others can access api from other domains, OPTIONAL
+app.use(cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));

@@ -24,7 +24,7 @@ exports.register = asyncHandler(async (req, res, next) => {
 // @desc        Login user
 // @route       POST /api/v1/auth/login
 // @access      Public
-exports.login = asyncHandler(async (req, res, next) => {
+exports.login = asyncHandler(async (req, res, next) => {  
     const { email, password } = req.body;
 
     // Validate Email and Password
@@ -55,7 +55,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 // @access      Private
 exports.logout = asyncHandler(async (req, res, next) => {
     res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000), // 10 minutes can change IMPORTANT
+        // 10 minutes expiration, can change !IMPORTANT!
+        expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true
     });
 
